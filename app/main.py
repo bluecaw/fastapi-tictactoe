@@ -240,7 +240,7 @@ def index():
                 }
                 let html = '';
                 ranking.forEach((r, i) => {
-                    html += `<li>第${i+1位}: <strong>${r.attempts}回</strong> (${r.created_at})</li>`;
+                    html += `<li>第${i + 1}位: <strong>${r.attempts}回</strong> (${r.created_at})</li>`;
                 });
                 listEl.innerHTML = html;
             }
