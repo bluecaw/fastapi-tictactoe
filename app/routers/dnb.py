@@ -1,3 +1,4 @@
+from app.database import get_db_connection
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -55,6 +56,22 @@ def make_move(move: DnBMove):
         dnb_state["winner"] = "P2"
       else:
         dnb_state["winner"] = "Draw"
+
+      # 🎯 ドット＆ボックスの結果をデータベースに保存
+      conn = get_db_connection()
+      cursor = conn.cursor()
+      cursor.execute(
+          "INSERT INTO dnb_scores (p1_score, p2_score, winner) VALUES (?, ?,"
+          " ?)",
+          (
+              dnb_state["scores"]["P1"],
+              dnb_state["scores"]["P2"],
+              dnb_state["winner"],
+          ),
+      )
+      conn.commit()
+      conn.close()
+
     elif not scored:
       dnb_state["turn"] = "P2" if dnb_state["turn"] == "P1" else "P1"
   return dnb_state

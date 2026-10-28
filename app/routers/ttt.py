@@ -1,3 +1,4 @@
+from app.database import get_db_connection
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -45,6 +46,16 @@ def make_move(move: TTTMove):
     winner = check_winner(ttt_state["board"])
     if winner:
       ttt_state["winner"] = winner
+
+      # 🎯 まるばつの結果をデータベースに保存
+      conn = get_db_connection()
+      cursor = conn.cursor()
+      cursor.execute(
+          "INSERT INTO ttt_scores (winner) VALUES (?)", (winner,)
+      )
+      conn.commit()
+      conn.close()
+
     else:
       ttt_state["turn"] = "O" if ttt_state["turn"] == "X" else "X"
   return ttt_state

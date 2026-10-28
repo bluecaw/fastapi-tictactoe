@@ -1,4 +1,5 @@
 import random
+from app.database import get_db_connection
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -46,6 +47,16 @@ def play_rps(move: RPSMove):
     if rps_state["streak"] > rps_state["max_streak"]:
       rps_state["max_streak"] = rps_state["streak"]
   else:
+    # 😢 負けたら連勝記録が途切れるので、その時点の連勝数をDBに保存
+    if rps_state["streak"] > 0:
+      conn = get_db_connection()
+      cursor = conn.cursor()
+      cursor.execute(
+          "INSERT INTO rps_scores (streak) VALUES (?)", (rps_state["streak"],)
+      )
+      conn.commit()
+      conn.close()
+
     rps_state["result"] = "Lose"
     rps_state["streak"] = 0
 
