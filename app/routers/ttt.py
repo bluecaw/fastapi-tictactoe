@@ -10,6 +10,25 @@ ttt_state = {"board": [""] * 9, "turn": "X", "winner": None}
 class TTTMove(BaseModel):
   index: int
 
+@router.get("/history")
+def get_ttt_history():
+  """直近5件の対戦結果を取得"""
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute(
+      "SELECT winner, created_at FROM ttt_scores ORDER BY id DESC LIMIT 5"
+  )
+  rows = cursor.fetchall()
+  conn.close()
+  return [
+      {"winner": row["winner"], "created_at": row["created_at"]} for row in rows
+  ]
+
+
+@router.get("")
+def get_game():
+  return ttt_state
+
 
 def check_winner(board):
   lines = [

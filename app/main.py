@@ -95,30 +95,48 @@ def index():
 
         <div class="content">
             <!-- 1. まるばつゲーム -->
-            <div id="game-ttt" class="game-container active">
-                <div id="ttt-status" class="status">読み込み中...</div>
-                <div class="ttt-board" id="ttt-board"></div>
-                <button class="reset-btn" onclick="resetTTT()">リセット</button>
-            </div>
-
-            <!-- 2. ドット＆ボックス -->
-            <div id="game-dnb" class="game-container">
-                <div id="dnb-status" class="status">読み込み中...</div>
-                <div id="dnb-board" class="dnb-board"></div>
-                <button class="reset-btn" onclick="resetDnB()">リセット</button>
-            </div>
-
-            <!-- 3. じゃんけん連勝バトル -->
-            <div id="game-rps" class="game-container">
-                <div id="rps-status" class="status">読み込み中...</div>
-                <div class="rps-btns">
-                    <button onclick="playRPS('rock')">✊ グー</button>
-                    <button onclick="playRPS('paper')">✋ パー</button>
-                    <button onclick="playRPS('scissors')">✌️ チョキ</button>
+                <div id="game-ttt" class="game-container active">
+                    <div id="ttt-status" class="status">読み込み中...</div>
+                    <div class="ttt-board" id="ttt-board"></div>
+                    <button class="reset-btn" onclick="resetTTT()">リセット</button>
+                    <div style="margin-top:20px;">
+                        <div class="ranking-box">
+                            <strong>📋 直近の対戦履歴 (5件)</strong>
+                            <ul id="ttt-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
+                        </div>
+                    </div>
                 </div>
-                <div id="rps-result" style="font-size: 20px; margin-top: 15px;"></div>
-                <button class="reset-btn" onclick="resetRPS()">リセット</button>
-            </div>
+
+                <!-- 2. ドット＆ボックス -->
+                <div id="game-dnb" class="game-container">
+                    <div id="dnb-status" class="status">読み込み中...</div>
+                    <div id="dnb-board" class="dnb-board"></div>
+                    <button class="reset-btn" onclick="resetDnB()">リセット</button>
+                    <div style="margin-top:20px;">
+                        <div class="ranking-box">
+                            <strong>📋 直近の対戦履歴 (5件)</strong>
+                            <ul id="dnb-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. じゃんけん連勝バトル -->
+                <div id="game-rps" class="game-container">
+                    <div id="rps-status" class="status">読み込み中...</div>
+                    <div class="rps-btns">
+                        <button onclick="playRPS('rock')">✊ グー</button>
+                        <button onclick="playRPS('paper')">✋ パー</button>
+                        <button onclick="playRPS('scissors')">✌️ チョキ</button>
+                    </div>
+                    <div id="rps-result" style="font-size: 20px; margin-top: 15px;"></div>
+                    <button class="reset-btn" onclick="resetRPS()">リセット</button>
+                    <div style="margin-top:20px;">
+                        <div class="ranking-box">
+                            <strong>🏆 連勝ランキング (上位5件)</strong>
+                            <ul id="rps-ranking-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
+                        </div>
+                    </div>
+                </div>
 
             <!-- 4. 数字当てゲーム -->
             <div id="game-guess" class="game-container">

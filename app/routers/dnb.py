@@ -18,6 +18,27 @@ class DnBMove(BaseModel):
   type: str
   index: int
 
+@router.get("/history")
+def get_dnb_history():
+  """直近5件の対戦結果を取得"""
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute(
+      "SELECT p1_score, p2_score, winner, created_at FROM dnb_scores ORDER BY id"
+      " DESC LIMIT 5"
+  )
+  rows = cursor.fetchall()
+  conn.close()
+  return [
+      {
+          "p1_score": row["p1_score"],
+          "p2_score": row["p2_score"],
+          "winner": row["winner"],
+          "created_at": row["created_at"],
+      }
+      for row in rows
+  ]
+
 
 def update_boxes():
   box_reqs = [(0, 2, 0, 1), (1, 3, 1, 2), (2, 4, 3, 4), (3, 5, 4, 5)]

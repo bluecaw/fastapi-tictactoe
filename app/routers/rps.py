@@ -17,6 +17,19 @@ rps_state = {
 class RPSMove(BaseModel):
   hand: str
 
+@router.get("/ranking")
+def get_rps_ranking():
+  """連勝記録の上位5件を取得"""
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute(
+      "SELECT streak, created_at FROM rps_scores ORDER BY streak DESC LIMIT 5"
+  )
+  rows = cursor.fetchall()
+  conn.close()
+  return [
+      {"streak": row["streak"], "created_at": row["created_at"]} for row in rows
+  ]
 
 @router.get("")
 def get_game():
