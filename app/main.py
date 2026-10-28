@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from app.database import init_db
 from app.routers import dnb, guess, rps, ttt
 from fastapi.staticfiles import StaticFiles
@@ -46,6 +46,21 @@ app.include_router(dnb.router)
 app.include_router(rps.router)
 app.include_router(guess.router)
 
+# 🎮 ゲーム用ファビコン（SVG）のエンドポイント
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+  svg_code = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+        <rect width="64" height="64" rx="14" fill="#333333"/>
+        <!-- コントローラー本体 -->
+        <path d="M16 22 H48 C53 22 56 26 55 31 L52 46 C51 49 47 51 44 49 L37 44 H27 L20 49 C17 51 13 49 12 46 L9 31 C8 26 11 22 16 22 Z" fill="#007bff"/>
+        <!-- 十字キー -->
+        <rect x="18" y="32" width="10" height="3" fill="#ffffff" rx="1"/>
+        <rect x="21.5" y="28.5" width="3" height="10" fill="#ffffff" rx="1"/>
+        <!-- ABボタン -->
+        <circle cx="41" cy="35" r="2.5" fill="#ff4757"/>
+        <circle cx="46" cy="31" r="2.5" fill="#ffa502"/>
+    </svg>"""
+  return Response(content=svg_code, media_type="image/svg+xml")
 
 @app.get("/", response_class=HTMLResponse)
 def index():
@@ -56,6 +71,7 @@ def index():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>FastAPI ミニゲームポータル</title>
+        <link rel="icon" type="image/svg+xml" href="/favicon.ico">
         <style>
             body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; background: #f4f4f9; }
             header { background: #333; color: white; padding: 15px; display: flex; align-items: center; }
