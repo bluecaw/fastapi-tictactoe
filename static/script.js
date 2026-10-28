@@ -146,5 +146,37 @@ async function fetchRanking() {
     listEl.innerHTML = html;
 }
 
+// --- イベントリスナーの登録（CSP対応） ---
+
+// ハンバーガーメニューの開閉
+document.getElementById('open-sidebar').addEventListener('click', openNav);
+document.getElementById('close-sidebar').addEventListener('click', closeNav);
+
+// サイドバーのゲーム切り替えリンク
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        const gameKey = e.target.getAttribute('data-game');
+        switchGame(gameKey);
+    });
+});
+
+// 各種リセットボタン
+document.getElementById('reset-ttt').addEventListener('click', resetTTT);
+document.getElementById('reset-dnb').addEventListener('click', resetDnB);
+document.getElementById('reset-rps').addEventListener('click', resetRPS);
+document.getElementById('reset-guess').addEventListener('click', resetGuess);
+
+// じゃんけんボタン
+document.querySelectorAll('.rps-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const hand = e.target.getAttribute('data-hand');
+        playRPS(hand);
+    });
+});
+
+// 数字当て送信ボタン
+document.getElementById('guess-submit').addEventListener('click', playGuess);
+
+
 // 初期ロード時に最初のゲーム（まるばつ）の履歴を取得
 fetchTTT();

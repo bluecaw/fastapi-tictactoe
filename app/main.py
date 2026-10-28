@@ -97,16 +97,16 @@ def index():
         </style>
     </head>
     <body>
-        <div id="mySidebar" class="sidebar">
-            <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
-            <a href="javascript:void(0)" onclick="switchGame('ttt')">⭕❌ まるばつゲーム</a>
-            <a href="javascript:void(0)" onclick="switchGame('dnb')">🔳 線引き陣取り</a>
-            <a href="javascript:void(0)" onclick="switchGame('rps')">✌️ じゃんけん連勝バトル</a>
-            <a href="javascript:void(0)" onclick="switchGame('guess')">🔢 数字当てゲーム</a>
+<div id="mySidebar" class="sidebar">
+            <a href="javascript:void(0)" class="close-btn" id="close-sidebar">&times;</a>
+            <a href="javascript:void(0)" class="nav-link" data-game="ttt">⭕❌ まるばつゲーム</a>
+            <a href="javascript:void(0)" class="nav-link" data-game="dnb">🔳 線引き陣取り</a>
+            <a href="javascript:void(0)" class="nav-link" data-game="rps">✌️ じゃんけん連勝バトル</a>
+            <a href="javascript:void(0)" class="nav-link" data-game="guess">🔢 数字当てゲーム</a>
         </div>
 
         <header>
-            <button class="menu-btn" onclick="openNav()">&#9776;</button>
+            <button class="menu-btn" id="open-sidebar">&#9776;</button>
             <h2 id="title" style="margin:0;">まるばつゲーム</h2>
         </header>
 
@@ -115,7 +115,7 @@ def index():
             <div id="game-ttt" class="game-container active">
                 <div id="ttt-status" class="status">読み込み中...</div>
                 <div class="ttt-board" id="ttt-board"></div>
-                <button class="reset-btn" onclick="resetTTT()">リセット</button>
+                <button class="reset-btn" id="reset-ttt">リセット</button>
                 <div style="margin-top:20px;">
                     <div class="ranking-box">
                         <strong>📋 直近の対戦履歴 (5件)</strong>
@@ -128,7 +128,7 @@ def index():
             <div id="game-dnb" class="game-container">
                 <div id="dnb-status" class="status">読み込み中...</div>
                 <div id="dnb-board" class="dnb-board"></div>
-                <button class="reset-btn" onclick="resetDnB()">リセット</button>
+                <button class="reset-btn" id="reset-dnb">リセット</button>
                 <div style="margin-top:20px;">
                     <div class="ranking-box">
                         <strong>📋 直近の対戦履歴 (5件)</strong>
@@ -141,12 +141,12 @@ def index():
             <div id="game-rps" class="game-container">
                 <div id="rps-status" class="status">読み込み中...</div>
                 <div class="rps-btns">
-                    <button onclick="playRPS('rock')">✊ グー</button>
-                    <button onclick="playRPS('paper')">✋ パー</button>
-                    <button onclick="playRPS('scissors')">✌️ チョキ</button>
+                    <button class="rps-btn" data-hand="rock">✊ グー</button>
+                    <button class="rps-btn" data-hand="paper">✋ パー</button>
+                    <button class="rps-btn" data-hand="scissors">✌️ チョキ</button>
                 </div>
                 <div id="rps-result" style="font-size: 20px; margin-top: 15px;"></div>
-                <button class="reset-btn" onclick="resetRPS()">リセット</button>
+                <button class="reset-btn" id="reset-rps">リセット</button>
                 <div style="margin-top:20px;">
                     <div class="ranking-box">
                         <strong>🏆 連勝ランキング (上位5件)</strong>
@@ -160,10 +160,10 @@ def index():
                 <div id="guess-status" class="status">読み込み中...</div>
                 <div class="guess-box">
                     <input type="number" id="guess-input" min="1" max="100" placeholder="1〜100">
-                    <button onclick="playGuess()">送信</button>
+                    <button id="guess-submit">送信</button>
                 </div>
                 <br>
-                <button class="reset-btn" onclick="resetGuess()">リセット</button>
+                <button class="reset-btn" id="reset-guess">リセット</button>
                 <div>
                     <div class="ranking-box">
                         <strong>🏆 クリアランキング (上位5件)</strong>
