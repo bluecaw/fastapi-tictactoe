@@ -115,14 +115,17 @@ def make_move(move: DnBMove):
                 dnb_state["winner"] = "Draw"
 
             # 🎯 Firestore にゲーム結果を保存
-            db.collection("dnb_scores").add(
-                {
-                    "p1_score": dnb_state["scores"]["P1"],
-                    "p2_score": dnb_state["scores"]["P2"],
-                    "winner": dnb_state["winner"],
-                    "created_at": firestore.SERVER_TIMESTAMP,
-                }
-            )
+            try:
+                db.collection("dnb_scores").add(
+                    {
+                        "p1_score": dnb_state["scores"]["P1"],
+                        "p2_score": dnb_state["scores"]["P2"],
+                        "winner": dnb_state["winner"],
+                        "created_at": firestore.SERVER_TIMESTAMP,
+                    }
+                )
+            except Exception as e:
+                print(f"DnB save error: {e}")
 
         elif not scored:
             dnb_state["turn"] = "P2" if dnb_state["turn"] == "P1" else "P1"
