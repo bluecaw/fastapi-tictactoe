@@ -1,9 +1,17 @@
+from datetime import datetime
 import random
-from app.database import get_db_connection
 from fastapi import APIRouter
+import firebase_admin
+from firebase_admin import credentials, firestore
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/guess", tags=["Number Guess"])
+if not firebase_admin._apps:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
+router = APIRouter(prefix="/api/guess", tags=["Number Guessing"])
 
 guess_state = {
     "target": random.randint(1, 100),
@@ -14,67 +22,81 @@ guess_state = {
 
 
 class GuessMove(BaseModel):
-  number: int
+    number: int
+
+
+@router.get("/ranking")
+def get_guess_ranking():
+    """Firestore から試行回数が少ない順に上位5件のランキングを取得"""
+    try:
+        docs = (
+            db.collection("guess_rankings")
+            .order_by("attempts", direction=firestore.Query.ASCENDING)
+            .limit(5)
+            .stream()
+        )
+        ranking = []
+        for doc in docs:
+            data = doc.to_dict()
+            created_at = data.get("created_at")
+            if isinstance(created_at, datetime):
+                created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                created_at = str(datetime.now())
+
+            ranking.append(
+                {
+                    "attempts": data.get("attempts"),
+                    "created_at": created_at,
+                }
+            )
+        return ranking
+    except Exception:
+        return []
 
 
 @router.get("")
 def get_game():
-  return {
-      "attempts": guess_state["attempts"],
-      "message": guess_state["message"],
-      "clear": guess_state["clear"],
-  }
+    return {
+        "message": guess_state["message"],
+        "attempts": guess_state["attempts"],
+        "clear": guess_state["clear"],
+    }
 
 
 @router.post("/play")
 def play_guess(move: GuessMove):
-  if guess_state["clear"]:
-    return guess_state
+    if guess_state["clear"]:
+        return get_game()
 
-  guess_state["attempts"] += 1
-  num = move.number
+    guess_state["attempts"] += 1
+    val = move.number
 
-  if num < guess_state["target"]:
-    guess_state["message"] = f"{num} より**もっと大きい**です！"
-  elif num > guess_state["target"]:
-    guess_state["message"] = f"{num} より**もっと小さい**です！"
-  else:
-    guess_state["message"] = (
-        f"正解です！ 🎉 （試行回数: {guess_state['attempts']}回）"
-    )
-    guess_state["clear"] = True
+    if val < guess_state["target"]:
+        guess_state["message"] = f"{val} より大きいよ！ 📈"
+    elif val > guess_state["target"]:
+        guess_state["message"] = f"{val} より小さいよ！ 📉"
+    else:
+        guess_state["message"] = (
+            f"🎉 正解！ 試行回数: {guess_state['attempts']}回"
+        )
+        guess_state["clear"] = True
 
-    # 🎯 クリア時にSQLiteへスコアを保存
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO guess_scores (attempts) VALUES (?)",
-        (guess_state["attempts"],),
-    )
-    conn.commit()
-    conn.close()
+        # 🎯 クリア時に Firestore にランキングを保存
+        db.collection("guess_rankings").add(
+            {
+                "attempts": guess_state["attempts"],
+                "created_at": firestore.SERVER_TIMESTAMP,
+            }
+        )
 
-  return guess_state
-
-
-@router.get("/ranking")
-def get_ranking():
-  """過去のクリア記録（少い試行回数順の上位5件）を取得"""
-  conn = get_db_connection()
-  cursor = conn.cursor()
-  cursor.execute(
-      "SELECT attempts, created_at FROM guess_scores ORDER BY attempts ASC LIMIT"
-      " 5"
-  )
-  rows = cursor.fetchall()
-  conn.close()
-  return [{"attempts": row["attempts"], "created_at": row["created_at"]} for row in rows]
+    return get_game()
 
 
 @router.post("/reset")
 def reset_game():
-  guess_state["target"] = random.randint(1, 100)
-  guess_state["attempts"] = 0
-  guess_state["message"] = "1から100までの数字を当て直してね！"
-  guess_state["clear"] = False
-  return guess_state
+    guess_state["target"] = random.randint(1, 100)
+    guess_state["attempts"] = 0
+    guess_state["message"] = "ゲームがリセットされました。1〜100を入力してね！"
+    guess_state["clear"] = False
+    return get_game()

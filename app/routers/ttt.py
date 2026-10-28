@@ -1,88 +1,110 @@
-from app.database import get_db_connection
+from datetime import datetime
 from fastapi import APIRouter
+import firebase_admin
+from firebase_admin import credentials, firestore
 from pydantic import BaseModel
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 router = APIRouter(prefix="/api/ttt", tags=["Tic-Tac-Toe"])
 
-ttt_state = {"board": [""] * 9, "turn": "X", "winner": None}
+ttt_state = {
+    "board": [""] * 9,
+    "turn": "⭕",
+    "winner": None,
+}
 
 
 class TTTMove(BaseModel):
-  index: int
+    index: int
+
 
 @router.get("/history")
 def get_ttt_history():
-  """直近5件の対戦結果を取得"""
-  conn = get_db_connection()
-  cursor = conn.cursor()
-  cursor.execute(
-      "SELECT winner, created_at FROM ttt_scores ORDER BY id DESC LIMIT 5"
-  )
-  rows = cursor.fetchall()
-  conn.close()
-  return [
-      {"winner": row["winner"], "created_at": row["created_at"]} for row in rows
-  ]
+    """Firestore から直近5件の履歴を取得"""
+    try:
+        docs = (
+            db.collection("ttt_scores")
+            .order_by("created_at", direction=firestore.Query.DESCENDING)
+            .limit(5)
+            .stream()
+        )
+        history = []
+        for doc in docs:
+            data = doc.to_dict()
+            created_at = data.get("created_at")
+            if isinstance(created_at, datetime):
+                created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                created_at = str(datetime.now())
+
+            history.append(
+                {
+                    "winner": data.get("winner"),
+                    "created_at": created_at,
+                }
+            )
+        return history
+    except Exception:
+        return []
 
 
 @router.get("")
 def get_game():
-  return ttt_state
-
-
-def check_winner(board):
-  lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-  ]
-  for line in lines:
-    a, b, c = line
-    if board[a] and board[a] == board[b] == board[c]:
-      return board[a]
-  if "" not in board:
-    return "Draw"
-  return None
-
-
-@router.get("")
-def get_game():
-  return ttt_state
+    return ttt_state
 
 
 @router.post("/move")
 def make_move(move: TTTMove):
-  if ttt_state["winner"] is not None:
-    return ttt_state
-  idx = move.index
-  if 0 <= idx < 9 and ttt_state["board"][idx] == "":
-    ttt_state["board"][idx] = ttt_state["turn"]
-    winner = check_winner(ttt_state["board"])
-    if winner:
-      ttt_state["winner"] = winner
+    if ttt_state["winner"] is not None or ttt_state["board"][move.index] != "":
+        return ttt_state
 
-      # 🎯 まるばつの結果をデータベースに保存
-      conn = get_db_connection()
-      cursor = conn.cursor()
-      cursor.execute(
-          "INSERT INTO ttt_scores (winner) VALUES (?)", (winner,)
-      )
-      conn.commit()
-      conn.close()
+    ttt_state["board"][move.index] = ttt_state["turn"]
 
+    # 勝利判定
+    wins = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+    ]
+    for w in wins:
+        if (
+            ttt_state["board"][w[0]]
+            and ttt_state["board"][w[0]] == ttt_state["board"][w[1]]
+            == ttt_state["board"][w[2]]
+        ):
+            ttt_state["winner"] = ttt_state["board"][w[0]]
+            break
+
+    if not ttt_state["winner"] and "" not in ttt_state["board"]:
+        ttt_state["winner"] = "Draw"
+
+    if ttt_state["winner"]:
+        # 🎯 Firestore に履歴を保存
+        db.collection("ttt_scores").add(
+            {
+                "winner": ttt_state["winner"],
+                "created_at": firestore.SERVER_TIMESTAMP,
+            }
+        )
     else:
-      ttt_state["turn"] = "O" if ttt_state["turn"] == "X" else "X"
-  return ttt_state
+        ttt_state["turn"] = "❌" if ttt_state["turn"] == "⭕" else "⭕"
+
+    return ttt_state
 
 
 @router.post("/reset")
 def reset_game():
-  ttt_state["board"] = [""] * 9
-  ttt_state["turn"] = "X"
-  ttt_state["winner"] = None
-  return ttt_state
+    ttt_state["board"] = [""] * 9
+    ttt_state["turn"] = "⭕"
+    ttt_state["winner"] = None
+    return ttt_state
