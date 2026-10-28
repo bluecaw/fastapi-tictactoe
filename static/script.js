@@ -77,7 +77,17 @@ function renderDnB(data) {
     function createHLine(idx) {
         const line = document.createElement('div');
         line.className = 'h-line';
-        if (data.h_lines[idx]) line.classList.add('active');
+        
+        // データの値（例: null, 'P1', 'P2', または true/false など）に応じた処理
+        const owner = data.h_lines[idx]; 
+        if (owner) {
+            line.classList.add('active');
+            // 'P1' なら p1クラス、'P2' なら p2クラスを付与
+            if (owner === 'P1' || owner === 1) line.classList.add('p1');
+            else if (owner === 'P2' || owner === 2) line.classList.add('p2');
+            else line.classList.add('p1'); // 単なる真偽値の場合はデフォルトでp1扱い
+        }
+
         line.addEventListener('click', () => moveDnB('h', idx));
         return line;
     }
@@ -86,7 +96,15 @@ function renderDnB(data) {
     function createVLine(idx) {
         const line = document.createElement('div');
         line.className = 'v-line';
-        if (data.v_lines[idx]) line.classList.add('active');
+        
+        const owner = data.v_lines[idx];
+        if (owner) {
+            line.classList.add('active');
+            if (owner === 'P1' || owner === 1) line.classList.add('p1');
+            else if (owner === 'P2' || owner === 2) line.classList.add('p2');
+            else line.classList.add('p1');
+        }
+
         line.addEventListener('click', () => moveDnB('v', idx));
         return line;
     }
@@ -102,11 +120,20 @@ function renderDnB(data) {
     function createBox(idx) {
         const box = document.createElement('div');
         box.className = 'box';
-        box.innerText = data.boxes[idx];
+        
+        const boxOwner = data.boxes[idx]; // 例: 'P1', 'P2', または空文字
+        if (boxOwner) {
+            box.innerText = boxOwner;
+            if (boxOwner === 'P1') box.classList.add('p1');
+            else if (boxOwner === 'P2') box.classList.add('p2');
+        } else {
+            box.innerText = '';
+        }
+
         return box;
     }
 
-    // 行1 (Dot - HLine0 - Dot - HLine1 - Dot)
+    // --- 以下、行の組み立て（変更なし） ---
     const row1 = document.createElement('div');
     row1.className = 'dnb-row';
     row1.appendChild(createDot());
@@ -116,7 +143,6 @@ function renderDnB(data) {
     row1.appendChild(createDot());
     boardEl.appendChild(row1);
 
-    // 行2 (VLine0 - Box0 - VLine1 - Box1 - VLine2)
     const row2 = document.createElement('div');
     row2.className = 'dnb-row';
     row2.appendChild(createVLine(0));
@@ -126,7 +152,6 @@ function renderDnB(data) {
     row2.appendChild(createVLine(2));
     boardEl.appendChild(row2);
 
-    // 行3 (Dot - HLine2 - Dot - HLine3 - Dot)
     const row3 = document.createElement('div');
     row3.className = 'dnb-row';
     row3.appendChild(createDot());
@@ -136,7 +161,6 @@ function renderDnB(data) {
     row3.appendChild(createDot());
     boardEl.appendChild(row3);
 
-    // 行4 (VLine3 - Box2 - VLine4 - Box3 - VLine5)
     const row4 = document.createElement('div');
     row4.className = 'dnb-row';
     row4.appendChild(createVLine(3));
@@ -146,7 +170,6 @@ function renderDnB(data) {
     row4.appendChild(createVLine(5));
     boardEl.appendChild(row4);
 
-    // 行5 (Dot - HLine4 - Dot - HLine5 - Dot)
     const row5 = document.createElement('div');
     row5.className = 'dnb-row';
     row5.appendChild(createDot());

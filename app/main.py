@@ -103,7 +103,7 @@ def index():
             .box.p1 { background: #e0f2fe; color: #0369a1; }
             .box.p2 { background: #ffe4e6; color: #9f1239; }
 
-                        /* じゃんけん */
+            /* じゃんけん */
             .rps-btns button { font-size: 24px; padding: 15px 25px; margin: 10px; cursor: pointer; border-radius: 12px; border: 2px solid #bae6fd; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
             .rps-btns button:hover { background: #e0f2fe; border-color: #0ea5e9; }
 
