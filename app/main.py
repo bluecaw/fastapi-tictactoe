@@ -23,6 +23,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 2. 🆕 セキュリティヘッダーを追加するミドルウェア（ここに追加）
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+  response = await call_next(request)
+  response.headers["Strict-Transport-Security"] = (
+      "max-age=63072000; includeSubDomains; preload"
+  )
+  response.headers["X-Content-Type-Options"] = "nosniff"
+  response.headers["X-Frame-Options"] = "SAMEORIGIN"
+  response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+  response.headers["Content-Security-Policy"] = (
+      "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src"
+      " 'self' 'unsafe-inline';"
+  )
+  return response
+
 # 各ゲームのルーター登録
 app.include_router(ttt.router)
 app.include_router(dnb.router)
