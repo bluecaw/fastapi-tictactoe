@@ -87,26 +87,23 @@ def index():
             .ttt-cell { width: 90px; height: 90px; background: white; font-size: 36px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #bae6fd; border-radius: 10px; box-shadow: 0 2px 4px rgba(2,132,199,0.05); }
             .ttt-cell:hover { background: #f8fafc; border-color: #0ea5e9; }
 
-            /* ドット＆ボックス（線引き陣取り）のプレイヤー別カラー */
-            .h-line.active, .v-line.active {
-                background: #0284c7; /* デフォルト（P1）の色 */
-            }
-            /* P2の手番やP2が取った線・ボックスの色を区別できるようにする例 */
-            /* サーバー側やクラス管理で区別している場合は以下のようにクラス名で制御 */
-            .h-line.p1, .v-line.p1 { background: #0284c7; } /* プレイヤー1：ブルー */
-            .h-line.p2, .v-line.p2 { background: #f43f5e; } /* プレイヤー2：ローズピンク */
-            .box.p1 { background: #e0f2fe; color: #0369a1; }
-            .box.p2 { background: #ffe4e6; color: #9f1239; }
+            /* ドット＆ボックス（線引き陣取り）の基本レイアウト */
             .dnb-board { display: inline-block; margin: 20px auto; }
             .dnb-row { display: flex; align-items: center; justify-content: center; }
             .dot { width: 12px; height: 12px; background: #0369a1; border-radius: 50%; }
-            .h-line { width: 60px; height: 8px; background: #e0f2fe; cursor: pointer; margin: 0 2px; border-radius: 4px; }
-            .h-line.active { background: #0284c7; }
-            .v-line { width: 8px; height: 60px; background: #e0f2fe; cursor: pointer; margin: 2px 0; border-radius: 4px; }
-            .v-line.active { background: #0284c7; }
+            
+            .h-line { width: 60px; height: 8px; background: #e0f2fe; cursor: pointer; margin: 0 2px; border-radius: 4px; transition: background 0.2s; }
+            .v-line { width: 8px; height: 60px; background: #e0f2fe; cursor: pointer; margin: 2px 0; border-radius: 4px; transition: background 0.2s; }
+            
+            /* プレイヤー別の色分け用クラス */
+            .h-line.p1, .v-line.p1, .h-line.active { background: #0284c7; } /* プレイヤー1：ブルー */
+            .h-line.p2, .v-line.p2 { background: #f43f5e; } /* プレイヤー2：ローズピンク */
+            
             .box { width: 60px; height: 60px; background: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border-radius: 4px; border: 1px solid #bae6fd; }
+            .box.p1 { background: #e0f2fe; color: #0369a1; }
+            .box.p2 { background: #ffe4e6; color: #9f1239; }
 
-            /* じゃんけん */
+                        /* じゃんけん */
             .rps-btns button { font-size: 24px; padding: 15px 25px; margin: 10px; cursor: pointer; border-radius: 12px; border: 2px solid #bae6fd; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
             .rps-btns button:hover { background: #e0f2fe; border-color: #0ea5e9; }
 
