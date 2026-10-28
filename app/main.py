@@ -95,48 +95,48 @@ def index():
 
         <div class="content">
             <!-- 1. まるばつゲーム -->
-                <div id="game-ttt" class="game-container active">
-                    <div id="ttt-status" class="status">読み込み中...</div>
-                    <div class="ttt-board" id="ttt-board"></div>
-                    <button class="reset-btn" onclick="resetTTT()">リセット</button>
-                    <div style="margin-top:20px;">
-                        <div class="ranking-box">
-                            <strong>📋 直近の対戦履歴 (5件)</strong>
-                            <ul id="ttt-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
-                        </div>
+            <div id="game-ttt" class="game-container active">
+                <div id="ttt-status" class="status">読み込み中...</div>
+                <div class="ttt-board" id="ttt-board"></div>
+                <button class="reset-btn" onclick="resetTTT()">リセット</button>
+                <div style="margin-top:20px;">
+                    <div class="ranking-box">
+                        <strong>📋 直近の対戦履歴 (5件)</strong>
+                        <ul id="ttt-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
                     </div>
                 </div>
+            </div>
 
-                <!-- 2. ドット＆ボックス -->
-                <div id="game-dnb" class="game-container">
-                    <div id="dnb-status" class="status">読み込み中...</div>
-                    <div id="dnb-board" class="dnb-board"></div>
-                    <button class="reset-btn" onclick="resetDnB()">リセット</button>
-                    <div style="margin-top:20px;">
-                        <div class="ranking-box">
-                            <strong>📋 直近の対戦履歴 (5件)</strong>
-                            <ul id="dnb-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
-                        </div>
+            <!-- 2. ドット＆ボックス -->
+            <div id="game-dnb" class="game-container">
+                <div id="dnb-status" class="status">読み込み中...</div>
+                <div id="dnb-board" class="dnb-board"></div>
+                <button class="reset-btn" onclick="resetDnB()">リセット</button>
+                <div style="margin-top:20px;">
+                    <div class="ranking-box">
+                        <strong>📋 直近の対戦履歴 (5件)</strong>
+                        <ul id="dnb-history-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
                     </div>
                 </div>
+            </div>
 
-                <!-- 3. じゃんけん連勝バトル -->
-                <div id="game-rps" class="game-container">
-                    <div id="rps-status" class="status">読み込み中...</div>
-                    <div class="rps-btns">
-                        <button onclick="playRPS('rock')">✊ グー</button>
-                        <button onclick="playRPS('paper')">✋ パー</button>
-                        <button onclick="playRPS('scissors')">✌️ チョキ</button>
-                    </div>
-                    <div id="rps-result" style="font-size: 20px; margin-top: 15px;"></div>
-                    <button class="reset-btn" onclick="resetRPS()">リセット</button>
-                    <div style="margin-top:20px;">
-                        <div class="ranking-box">
-                            <strong>🏆 連勝ランキング (上位5件)</strong>
-                            <ul id="rps-ranking-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
-                        </div>
+            <!-- 3. じゃんけん連勝バトル -->
+            <div id="game-rps" class="game-container">
+                <div id="rps-status" class="status">読み込み中...</div>
+                <div class="rps-btns">
+                    <button onclick="playRPS('rock')">✊ グー</button>
+                    <button onclick="playRPS('paper')">✋ パー</button>
+                    <button onclick="playRPS('scissors')">✌️ チョキ</button>
+                </div>
+                <div id="rps-result" style="font-size: 20px; margin-top: 15px;"></div>
+                <button class="reset-btn" onclick="resetRPS()">リセット</button>
+                <div style="margin-top:20px;">
+                    <div class="ranking-box">
+                        <strong>🏆 連勝ランキング (上位5件)</strong>
+                        <ul id="rps-ranking-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
                     </div>
                 </div>
+            </div>
 
             <!-- 4. 数字当てゲーム -->
             <div id="game-guess" class="game-container">
@@ -182,19 +182,25 @@ def index():
                 }
             }
 
-// TTT 拡張
+            // TTT
             async function fetchTTT() { 
                 renderTTT(await (await fetch('/api/ttt')).json());
-                fetchTTTHistory(); // ← 追加
+                fetchTTTHistory();
             }
             async function moveTTT(idx) {
                 const res = await (await fetch('/api/ttt/move', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({index:idx})})).json();
                 renderTTT(res);
-                if (res.winner) { fetchTTTHistory(); } // ← 勝敗が決まったら履歴を再取得
+                if (res.winner) { fetchTTTHistory(); }
             }
             async function resetTTT() { renderTTT(await (await fetch('/api/ttt/reset', {method:'POST'})).json()); }
-            
-            // 🆕 まるばつ履歴取得用関数を追加
+            function renderTTT(data) {
+                const b = document.getElementById('ttt-board'); b.innerHTML = '';
+                data.board.forEach((val, idx) => {
+                    const c = document.createElement('div'); c.className = 'ttt-cell'; c.innerText = val;
+                    c.onclick = () => moveTTT(idx); b.appendChild(c);
+                });
+                document.getElementById('ttt-status').innerText = data.winner ? (data.winner === 'Draw' ? '引き分け！' : `勝者: ${data.winner} 🎉`) : `現在の手番: ${data.turn}`;
+            }
             async function fetchTTTHistory() {
                 const res = await fetch('/api/ttt/history');
                 const history = await res.json();
@@ -203,19 +209,27 @@ def index():
                 listEl.innerHTML = history.map(h => `<li>勝者: <strong>${h.winner === 'Draw' ? '引き分け' : h.winner + 'の勝ち'}</strong> (${h.created_at})</li>`).join('');
             }
 
-            // DnB 拡張
+            // DnB
             async function fetchDnB() { 
                 renderDnB(await (await fetch('/api/dnb')).json());
-                fetchDnBHistory(); // ← 追加
+                fetchDnBHistory();
             }
             async function moveDnB(type, idx) {
                 const res = await (await fetch('/api/dnb/move', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:type, index:idx})})).json();
                 renderDnB(res);
-                if (res.winner) { fetchDnBHistory(); } // ← 勝敗が決まったら履歴を再取得
+                if (res.winner) { fetchDnBHistory(); }
             }
             async function resetDnB() { renderDnB(await (await fetch('/api/dnb/reset', {method:'POST'})).json()); }
-            
-            // 🆕 ドット＆ボックス履歴取得用関数を追加
+            function renderDnB(data) {
+                let html = '';
+                html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[0]?'active':''}" onclick="moveDnB('h',0)"></div><div class="dot"></div><div class="h-line ${data.h_lines[1]?'active':''}" onclick="moveDnB('h',1)"></div><div class="dot"></div></div>`;
+                html += `<div class="dnb-row"><div class="v-line ${data.v_lines[0]?'active':''}" onclick="moveDnB('v',0)"></div><div class="box">${data.boxes[0]}</div><div class="v-line ${data.v_lines[1]?'active':''}" onclick="moveDnB('v',1)"></div><div class="box">${data.boxes[1]}</div><div class="v-line ${data.v_lines[2]?'active':''}" onclick="moveDnB('v',2)"></div></div>`;
+                html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[2]?'active':''}" onclick="moveDnB('h',2)"></div><div class="dot"></div><div class="h-line ${data.h_lines[3]?'active':''}" onclick="moveDnB('h',3)"></div><div class="dot"></div></div>`;
+                html += `<div class="dnb-row"><div class="v-line ${data.v_lines[3]?'active':''}" onclick="moveDnB('v',3)"></div><div class="box">${data.boxes[2]}</div><div class="v-line ${data.v_lines[4]?'active':''}" onclick="moveDnB('v',4)"></div><div class="box">${data.boxes[3]}</div><div class="v-line ${data.v_lines[5]?'active':''}" onclick="moveDnB('v',5)"></div></div>`;
+                html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[4]?'active':''}" onclick="moveDnB('h',4)"></div><div class="dot"></div><div class="h-line ${data.h_lines[5]?'active':''}" onclick="moveDnB('h',5)"></div><div class="dot"></div></div>`;
+                document.getElementById('dnb-board').innerHTML = html;
+                document.getElementById('dnb-status').innerText = data.winner ? (data.winner === 'Draw' ? '引き分け！' : `勝者: ${data.winner} 🎉`) : `手番: ${data.turn} | P1: ${data.scores.P1}点 / P2: ${data.scores.P2}点`;
+            }
             async function fetchDnBHistory() {
                 const res = await fetch('/api/dnb/history');
                 const history = await res.json();
@@ -224,25 +238,35 @@ def index():
                 listEl.innerHTML = history.map(h => `<li>P1(${h.p1_score}) - P2(${h.p2_score}) | 勝者: <strong>${h.winner}</strong> (${h.created_at})</li>`).join('');
             }
 
-            // RPS 拡張
+            // RPS
             async function fetchRPS() { 
                 renderRPS(await (await fetch('/api/rps')).json());
-                fetchRPSRanking(); // ← 追加
+                fetchRPSRanking();
             }
             async function playRPS(hand) {
                 const res = await (await fetch('/api/rps/play', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({hand:hand})})).json();
                 renderRPS(res);
-                if (res.result === 'Lose') { fetchRPSRanking(); } // ← 負けたらランキングを再取得
+                if (res.result === 'Lose') { fetchRPSRanking(); }
             }
             async function resetRPS() { renderRPS(await (await fetch('/api/rps/reset', {method:'POST'})).json()); }
-            
-            // 🆕 じゃんけんランキング取得用関数を追加
+            function renderRPS(data) {
+                document.getElementById('rps-status').innerText = `現在の連勝数: ${data.streak} (最高: ${data.max_streak})`;
+                let resText = '';
+                if (data.result) {
+                    const symbols = {'rock': '✊', 'paper': '✋', 'scissors': '✌️'};
+                    resText = `あなた: ${symbols[data.last_user]} vs 相手: ${symbols[data.last_cpu]} → `;
+                    if (data.result === 'Win') resText += 'あなたの勝ち！ 🎉';
+                    else if (data.result === 'Lose') resText += 'あなたの負け... 😢';
+                    else resText += 'あいこ！';
+                }
+                document.getElementById('rps-result').innerHTML = resText;
+            }
             async function fetchRPSRanking() {
                 const res = await fetch('/api/rps/ranking');
                 const ranking = await res.json();
                 const listEl = document.getElementById('rps-ranking-list');
                 if (ranking.length === 0) { listEl.innerHTML = '<li>ランキング記録がありません</li>'; return; }
-                listEl.innerHTML = ranking.map((r, i) => `<li>第${i+1}位: <strong>${r.streak}連勝</strong> (${r.created_at})</li>`).join('');
+                listEl.innerHTML = ranking.map((r, i) => `<li>第${i + 1}位: <strong>${r.streak}連勝</strong> (${r.created_at})</li>`).join('');
             }
 
             // Guess
@@ -281,6 +305,7 @@ def index():
                 listEl.innerHTML = html;
             }
 
+            // 初期ロード時に最初のゲーム（まるばつ）の履歴を取得
             fetchTTT();
         </script>
     </body>
