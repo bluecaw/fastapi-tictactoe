@@ -1,9 +1,19 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from app.database import init_db
 from app.routers import dnb, guess, rps, ttt
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  # サーバー起動時にデータベースとテーブルを初期化
+  init_db()
+  yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 各ゲームのルーターを登録
+# 各ゲームのルーター登録
 app.include_router(ttt.router)
 app.include_router(dnb.router)
 app.include_router(rps.router)
@@ -42,7 +52,6 @@ def index():
             .game-container { display: none; }
             .game-container.active { display: block; }
 
-            /* 共通ボタン・ステータス */
             .status { font-size: 18px; margin: 15px; font-weight: bold; color: #444; }
             button.reset-btn { padding: 8px 16px; font-size: 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }
 
@@ -67,6 +76,7 @@ def index():
             /* 数字当て */
             .guess-box input { padding: 10px; font-size: 18px; width: 120px; text-align: center; }
             .guess-box button { padding: 10px 20px; font-size: 18px; background: #007bff; color: white; border: none; cursor: pointer; }
+            .ranking-box { margin-top: 20px; background: white; padding: 10px; display: inline-block; border-radius: 8px; border: 1px solid #ddd; text-align: left; }
         </style>
     </head>
     <body>
@@ -117,7 +127,14 @@ def index():
                     <input type="number" id="guess-input" min="1" max="100" placeholder="1〜100">
                     <button onclick="playGuess()">送信</button>
                 </div>
+                <br>
                 <button class="reset-btn" onclick="resetGuess()">リセット</button>
+                <div>
+                    <div class="ranking-box">
+                        <strong>🏆 クリアランキング (上位5件)</strong>
+                        <ul id="ranking-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -193,16 +210,39 @@ def index():
             }
 
             // Guess
-            async function fetchGuess() { renderGuess(await (await fetch('/api/guess')).json()); }
+            async function fetchGuess() { 
+                const res = await (await fetch('/api/guess')).json();
+                renderGuess(res);
+                fetchRanking();
+            }
             async function playGuess() {
                 const val = parseInt(document.getElementById('guess-input').value);
                 if (isNaN(val)) return;
-                renderGuess(await (await fetch('/api/guess/play', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({number:val})})).json());
+                const res = await (await fetch('/api/guess/play', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({number:val})})).json();
+                renderGuess(res);
                 document.getElementById('guess-input').value = '';
+                if (res.clear) { fetchRanking(); }
             }
-            async function resetGuess() { renderGuess(await (await fetch('/api/guess/reset', {method:'POST'})).json()); }
+            async function resetGuess() { 
+                const res = await (await fetch('/api/guess/reset', {method:'POST'})).json();
+                renderGuess(res);
+            }
             function renderGuess(data) {
                 document.getElementById('guess-status').innerHTML = `${data.message}<br><small>試行回数: ${data.attempts}回</small>`;
+            }
+            async function fetchRanking() {
+                const res = await fetch('/api/guess/ranking');
+                const ranking = await res.json();
+                const listEl = document.getElementById('ranking-list');
+                if (ranking.length === 0) {
+                    listEl.innerHTML = '<li>まだクリア記録がありません</li>';
+                    return;
+                }
+                let html = '';
+                ranking.forEach((r, i) => {
+                    html += `<li>第${i+1位}: <strong>${r.attempts}回</strong> (${r.created_at})</li>`;
+                });
+                listEl.innerHTML = html;
             }
 
             fetchTTT();
