@@ -16,7 +16,7 @@ class GuessMove(BaseModel):
   number: int
 
 
-@router.get("/")
+@router.get("")
 def get_game():
   return {
       "attempts": guess_state["attempts"],

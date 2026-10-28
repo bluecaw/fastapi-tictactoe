@@ -35,7 +35,7 @@ def update_boxes():
   return scored
 
 
-@router.get("/")
+@router.get("")
 def get_game():
   return dnb_state
 

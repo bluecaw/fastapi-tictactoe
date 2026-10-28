@@ -17,7 +17,7 @@ class RPSMove(BaseModel):
   hand: str
 
 
-@router.get("/")
+@router.get("")
 def get_game():
   return rps_state
 

@@ -30,7 +30,7 @@ def check_winner(board):
   return None
 
 
-@router.get("/")
+@router.get("")
 def get_game():
   return ttt_state
 
