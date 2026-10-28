@@ -1,3 +1,5 @@
+import os
+import json
 from datetime import datetime
 from fastapi import APIRouter
 import firebase_admin
@@ -6,7 +8,15 @@ from pydantic import BaseModel
 
 # --- Firebase の初期化（重複初期化防止） ---
 if not firebase_admin._apps:
-    cred = credentials.Certificate("serviceAccountKey.json")
+    # Renderの環境変数から秘密鍵のJSON文字列を取得して辞書に変換
+    firebase_key_json = os.environ.get("FIREBASE_CREDENTIALS_JSON")
+    if firebase_key_json:
+        cred_dict = json.loads(firebase_key_json)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # ローカル開発用（ファイルを直接読む）
+        cred = credentials.Certificate("serviceAccountKey.json")
+    
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
