@@ -1,23 +1,5 @@
-# 仮想環境
 venv/
 .venv/
-env/
-
-# Pythonコンパイルファイル
 __pycache__/
-*.py[cod]
-*$py.class
-
-# 環境変数・機密情報
 .env
-
-# ログファイル
-*.log
-
-# OS固有のファイル
 .DS_Store
-Thumbs.db
-
-# IDE・エディタの設定（VS Codeなど）
-.vscode/
-.idea/
