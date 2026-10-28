@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import json
 import os
 import random
@@ -22,8 +22,14 @@ class RPSPlay(BaseModel):
     hand: str
 
 
+# 🇯🇵 日本時間 (JST = UTC+9) の定義
+JST = timezone(timedelta(hours=9))
+
+# （ゲームの状態や /play などの処理はそのまま）
+
 @router.get("/ranking")
 def get_rps_ranking():
+    """Firestore からストレーク（連勝）ランキングを日本時間 (JST) に変換して取得"""
     try:
         docs = (
             db.collection("rps_rankings")
@@ -31,24 +37,29 @@ def get_rps_ranking():
             .limit(5)
             .stream()
         )
+        
         ranking = []
         for doc in docs:
             data = doc.to_dict()
             created_at = data.get("created_at")
+            
             if isinstance(created_at, datetime):
-                created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                created_at_jst = created_at.astimezone(JST)
+                created_at_str = created_at_jst.strftime("%Y-%m-%d %H:%M:%S")
             else:
-                created_at = str(datetime.now())
+                created_at_str = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
 
             ranking.append(
                 {
                     "streak": data.get("streak"),
-                    "created_at": created_at,
+                    "created_at": created_at_str,
                 }
             )
         return ranking
     except Exception as e:
-        print(f"Error fetching ranking: {e}")
+        print(f"Error fetching rps ranking: {e}")
         return []
 
 

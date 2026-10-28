@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -38,11 +38,13 @@ class DnBMove(BaseModel):
     index: int
 
 
+# 🇯🇵 日本時間 (JST = UTC+9) の定義
+JST = timezone(timedelta(hours=9))
+
 @router.get("/history")
 def get_dnb_history():
-    """Firestore から直近5件の対戦結果を取得"""
+    """Firestore から直近5件の対戦結果を日本時間 (JST) に変換して取得"""
     try:
-        # created_at の降順で最大5件取得
         docs = (
             db.collection("dnb_scores")
             .order_by("created_at", direction=firestore.Query.DESCENDING)
@@ -53,24 +55,31 @@ def get_dnb_history():
         history = []
         for doc in docs:
             data = doc.to_dict()
-            # タイムスタンプを文字列に変換
             created_at = data.get("created_at")
+            
             if isinstance(created_at, datetime):
-                created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
+                # Firestoreのdatetimeがタイムゾーン情報を持っていない（naiveな）場合はUTCとみなす
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                
+                # JST (UTC+9) に変換
+                created_at_jst = created_at.astimezone(JST)
+                created_at_str = created_at_jst.strftime("%Y-%m-%d %H:%M:%S")
             else:
-                created_at = str(datetime.now())
+                # 万が一タイムスタンプがない場合のフォールバック（現在時刻をJSTで）
+                created_at_str = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
 
             history.append(
                 {
                     "p1_score": data.get("p1_score"),
                     "p2_score": data.get("p2_score"),
                     "winner": data.get("winner"),
-                    "created_at": created_at,
+                    "created_at": created_at_str,
                 }
             )
         return history
     except Exception as e:
-        # テーブル（コレクション）がまだ無い場合などのエラー対策
+        print(f"Error fetching dnb history: {e}")
         return []
 
 

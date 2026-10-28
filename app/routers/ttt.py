@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -29,9 +29,13 @@ class TTTMove(BaseModel):
     index: int
 
 
+JST = timezone(timedelta(hours=9))
+
+# （ゲームの状態や /move などの処理はそのまま）
+
 @router.get("/history")
 def get_ttt_history():
-    """Firestore から直近5件の履歴を取得"""
+    """Firestore から直近の対戦結果を日本時間 (JST) に変換して取得"""
     try:
         docs = (
             db.collection("ttt_scores")
@@ -39,23 +43,29 @@ def get_ttt_history():
             .limit(5)
             .stream()
         )
+
         history = []
         for doc in docs:
             data = doc.to_dict()
             created_at = data.get("created_at")
+            
             if isinstance(created_at, datetime):
-                created_at = created_at.strftime("%Y-%m-%d %H:%M:%S")
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                created_at_jst = created_at.astimezone(JST)
+                created_at_str = created_at_jst.strftime("%Y-%m-%d %H:%M:%S")
             else:
-                created_at = str(datetime.now())
+                created_at_str = datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S")
 
             history.append(
                 {
                     "winner": data.get("winner"),
-                    "created_at": created_at,
+                    "created_at": created_at_str,
                 }
             )
         return history
-    except Exception:
+    except Exception as e:
+        print(f"Error fetching ttt history: {e}")
         return []
 
 
