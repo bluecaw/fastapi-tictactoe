@@ -87,7 +87,16 @@ def index():
             .ttt-cell { width: 90px; height: 90px; background: white; font-size: 36px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #bae6fd; border-radius: 10px; box-shadow: 0 2px 4px rgba(2,132,199,0.05); }
             .ttt-cell:hover { background: #f8fafc; border-color: #0ea5e9; }
 
-            /* ドット＆ボックス */
+            /* ドット＆ボックス（線引き陣取り）のプレイヤー別カラー */
+            .h-line.active, .v-line.active {
+                background: #0284c7; /* デフォルト（P1）の色 */
+            }
+            /* P2の手番やP2が取った線・ボックスの色を区別できるようにする例 */
+            /* サーバー側やクラス管理で区別している場合は以下のようにクラス名で制御 */
+            .h-line.p1, .v-line.p1 { background: #0284c7; } /* プレイヤー1：ブルー */
+            .h-line.p2, .v-line.p2 { background: #f43f5e; } /* プレイヤー2：ローズピンク */
+            .box.p1 { background: #e0f2fe; color: #0369a1; }
+            .box.p2 { background: #ffe4e6; color: #9f1239; }
             .dnb-board { display: inline-block; margin: 20px auto; }
             .dnb-row { display: flex; align-items: center; justify-content: center; }
             .dot { width: 12px; height: 12px; background: #0369a1; border-radius: 50%; }
@@ -126,20 +135,17 @@ def index():
     <body>
         <div class="bg-svg-container">
             <svg class="bg-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMax slice">
-                <!-- ゆるやかに動く水面 -->
-                <g class="bg-waves" opacity="0.7">
-                    <path d="M-100,400 C100,350 300,450 500,400 C700,350 900,450 1100,400 L1100,1000 L-100,1000 Z" fill="#bae6fd"/>
-                    <path d="M-100,450 C150,390 350,510 550,450 C750,390 950,510 1100,450 L1100,1000 L-100,1000 Z" fill="#7dd3fc"/>
-                    <path d="M-100,500 C80,470 280,530 480,500 C680,470 880,530 1100,500 L1100,1000 L-100,1000 Z" fill="#38bdf8"/>
+                <!-- 🌊 画面中央付近でゆるやかに動く水面 -->
+                <g class="bg-waves" opacity="0.65">
+                    <path d="M-100,550 C100,500 300,600 500,550 C700,500 900,600 1100,550 L1100,1000 L-100,1000 Z" fill="#bae6fd"/>
+                    <path d="M-100,600 C150,540 350,660 550,600 C750,540 950,660 1100,600 L1100,1000 L-100,1000 Z" fill="#7dd3fc"/>
+                    <path d="M-100,650 C80,620 280,680 480,650 C680,620 880,680 1100,650 L1100,1000 L-100,1000 Z" fill="#38bdf8"/>
                 </g>
 
-                <!-- もっと細かくごつごつした岩場（多層構造） -->
+                <!-- 岩場 -->
                 <g>
-                    <!-- 奥の暗い岩層 -->
                     <path d="M0,820 L30,790 L70,830 L110,780 L160,840 L210,800 L270,850 L320,810 L380,860 L430,820 L490,870 L540,830 L600,880 L660,840 L710,890 L770,840 L830,900 L880,850 L940,910 L1000,860 L1000,1000 L0,1000 Z" fill="#334155"/>
-                    <!-- 手前の細かいごつごつした岩層 -->
                     <path d="M0,880 L40,850 L80,910 L130,860 L180,920 L240,870 L290,930 L350,880 L410,940 L460,890 L520,950 L580,900 L630,960 L690,910 L750,970 L800,920 L860,980 L920,930 L970,990 L1000,950 L1000,1000 L0,1000 Z" fill="#475569"/>
-                    <!-- 最手前のエッジの効いた岩のハイライト層 -->
                     <path d="M0,930 L50,910 L90,960 L150,920 L200,970 L260,930 L320,980 L380,940 L440,990 L500,950 L560,1000 L620,950 L680,990 L740,940 L810,990 L870,950 L930,1000 L1000,970 L1000,1000 L0,1000 Z" fill="#64748b" opacity="0.8"/>
                 </g>
             </svg>

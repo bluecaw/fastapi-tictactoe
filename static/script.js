@@ -23,7 +23,7 @@ function switchGame(key) {
     }
 }
 
-// TTT
+// TTT (まるばつゲーム)
 async function fetchTTT() {
     renderTTT(await (await fetch('/api/ttt')).json());
     fetchTTTHistory();
@@ -34,14 +34,21 @@ async function moveTTT(idx) {
     if (res.winner) { fetchTTTHistory(); }
 }
 async function resetTTT() { renderTTT(await (await fetch('/api/ttt/reset', { method: 'POST' })).json()); }
+
 function renderTTT(data) {
-    const b = document.getElementById('ttt-board'); b.innerHTML = '';
+    const b = document.getElementById('ttt-board'); 
+    b.innerHTML = '';
     data.board.forEach((val, idx) => {
-        const c = document.createElement('div'); c.className = 'ttt-cell'; c.innerText = val;
-        c.onclick = () => moveTTT(idx); b.appendChild(c);
+        const c = document.createElement('div'); 
+        c.className = 'ttt-cell'; 
+        c.innerText = val;
+        // 🔒 CSP対応: onclick属性ではなく addEventListener を使用
+        c.addEventListener('click', () => moveTTT(idx));
+        b.appendChild(c);
     });
     document.getElementById('ttt-status').innerText = data.winner ? (data.winner === 'Draw' ? '引き分け！' : `勝者: ${data.winner} 🎉`) : `現在の手番: ${data.turn}`;
 }
+
 async function fetchTTTHistory() {
     const res = await fetch('/api/ttt/history');
     const history = await res.json();
@@ -50,7 +57,7 @@ async function fetchTTTHistory() {
     listEl.innerHTML = history.map(h => `<li>勝者: <strong>${h.winner === 'Draw' ? '引き分け' : h.winner + 'の勝ち'}</strong> (${h.created_at})</li>`).join('');
 }
 
-// DnB
+// DnB (線引き陣取り) - 完全DOM生成によるCSP対応
 async function fetchDnB() {
     renderDnB(await (await fetch('/api/dnb')).json());
     fetchDnBHistory();
@@ -61,16 +68,97 @@ async function moveDnB(type, idx) {
     if (res.winner) { fetchDnBHistory(); }
 }
 async function resetDnB() { renderDnB(await (await fetch('/api/dnb/reset', { method: 'POST' })).json()); }
+
 function renderDnB(data) {
-    let html = '';
-    html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[0] ? 'active' : ''}" onclick="moveDnB('h',0)"></div><div class="dot"></div><div class="h-line ${data.h_lines[1] ? 'active' : ''}" onclick="moveDnB('h',1)"></div><div class="dot"></div></div>`;
-    html += `<div class="dnb-row"><div class="v-line ${data.v_lines[0] ? 'active' : ''}" onclick="moveDnB('v',0)"></div><div class="box">${data.boxes[0]}</div><div class="v-line ${data.v_lines[1] ? 'active' : ''}" onclick="moveDnB('v',1)"></div><div class="box">${data.boxes[1]}</div><div class="v-line ${data.v_lines[2] ? 'active' : ''}" onclick="moveDnB('v',2)"></div></div>`;
-    html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[2] ? 'active' : ''}" onclick="moveDnB('h',2)"></div><div class="dot"></div><div class="h-line ${data.h_lines[3] ? 'active' : ''}" onclick="moveDnB('h',3)"></div><div class="dot"></div></div>`;
-    html += `<div class="dnb-row"><div class="v-line ${data.v_lines[3] ? 'active' : ''}" onclick="moveDnB('v',3)"></div><div class="box">${data.boxes[2]}</div><div class="v-line ${data.v_lines[4] ? 'active' : ''}" onclick="moveDnB('v',4)"></div><div class="box">${data.boxes[3]}</div><div class="v-line ${data.v_lines[5] ? 'active' : ''}" onclick="moveDnB('v',5)"></div></div>`;
-    html += `<div class="dnb-row"><div class="dot"></div><div class="h-line ${data.h_lines[4] ? 'active' : ''}" onclick="moveDnB('h',4)"></div><div class="dot"></div><div class="h-line ${data.h_lines[5] ? 'active' : ''}" onclick="moveDnB('h',5)"></div><div class="dot"></div></div>`;
-    document.getElementById('dnb-board').innerHTML = html;
+    const boardEl = document.getElementById('dnb-board');
+    boardEl.innerHTML = '';
+
+    // 補助関数: 横線要素の作成
+    function createHLine(idx) {
+        const line = document.createElement('div');
+        line.className = 'h-line';
+        if (data.h_lines[idx]) line.classList.add('active');
+        line.addEventListener('click', () => moveDnB('h', idx));
+        return line;
+    }
+
+    // 補助関数: 縦線要素の作成
+    function createVLine(idx) {
+        const line = document.createElement('div');
+        line.className = 'v-line';
+        if (data.v_lines[idx]) line.classList.add('active');
+        line.addEventListener('click', () => moveDnB('v', idx));
+        return line;
+    }
+
+    // 補助関数: ドット要素の作成
+    function createDot() {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        return dot;
+    }
+
+    // 補助関数: ボックス要素の作成
+    function createBox(idx) {
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.innerText = data.boxes[idx];
+        return box;
+    }
+
+    // 行1 (Dot - HLine0 - Dot - HLine1 - Dot)
+    const row1 = document.createElement('div');
+    row1.className = 'dnb-row';
+    row1.appendChild(createDot());
+    row1.appendChild(createHLine(0));
+    row1.appendChild(createDot());
+    row1.appendChild(createHLine(1));
+    row1.appendChild(createDot());
+    boardEl.appendChild(row1);
+
+    // 行2 (VLine0 - Box0 - VLine1 - Box1 - VLine2)
+    const row2 = document.createElement('div');
+    row2.className = 'dnb-row';
+    row2.appendChild(createVLine(0));
+    row2.appendChild(createBox(0));
+    row2.appendChild(createVLine(1));
+    row2.appendChild(createBox(1));
+    row2.appendChild(createVLine(2));
+    boardEl.appendChild(row2);
+
+    // 行3 (Dot - HLine2 - Dot - HLine3 - Dot)
+    const row3 = document.createElement('div');
+    row3.className = 'dnb-row';
+    row3.appendChild(createDot());
+    row3.appendChild(createHLine(2));
+    row3.appendChild(createDot());
+    row3.appendChild(createHLine(3));
+    row3.appendChild(createDot());
+    boardEl.appendChild(row3);
+
+    // 行4 (VLine3 - Box2 - VLine4 - Box3 - VLine5)
+    const row4 = document.createElement('div');
+    row4.className = 'dnb-row';
+    row4.appendChild(createVLine(3));
+    row4.appendChild(createBox(2));
+    row4.appendChild(createVLine(4));
+    row4.appendChild(createBox(3));
+    row4.appendChild(createVLine(5));
+    boardEl.appendChild(row4);
+
+    // 行5 (Dot - HLine4 - Dot - HLine5 - Dot)
+    const row5 = document.createElement('div');
+    row5.className = 'dnb-row';
+    row5.appendChild(createDot());
+    row5.appendChild(createHLine(4));
+    row5.appendChild(createDot());
+    row5.appendChild(createHLine(5));
+    row5.appendChild(createDot());
+    boardEl.appendChild(row5);
+
     document.getElementById('dnb-status').innerText = data.winner ? (data.winner === 'Draw' ? '引き分け！' : `勝者: ${data.winner} 🎉`) : `手番: ${data.turn} | P1: ${data.scores.P1}点 / P2: ${data.scores.P2}点`;
 }
+
 async function fetchDnBHistory() {
     const res = await fetch('/api/dnb/history');
     const history = await res.json();
@@ -79,7 +167,7 @@ async function fetchDnBHistory() {
     listEl.innerHTML = history.map(h => `<li>P1(${h.p1_score}) - P2(${h.p2_score}) | 勝者: <strong>${h.winner}</strong> (${h.created_at})</li>`).join('');
 }
 
-// RPS
+// RPS (じゃんけん)
 async function fetchRPS() {
     renderRPS(await (await fetch('/api/rps')).json());
     fetchRPSRanking();
@@ -90,6 +178,7 @@ async function playRPS(hand) {
     if (res.result === 'Lose') { fetchRPSRanking(); }
 }
 async function resetRPS() { renderRPS(await (await fetch('/api/rps/reset', { method: 'POST' })).json()); }
+
 function renderRPS(data) {
     document.getElementById('rps-status').innerText = `現在の連勝数: ${data.streak} (最高: ${data.max_streak})`;
     let resText = '';
@@ -102,6 +191,7 @@ function renderRPS(data) {
     }
     document.getElementById('rps-result').innerHTML = resText;
 }
+
 async function fetchRPSRanking() {
     const res = await fetch('/api/rps/ranking');
     const ranking = await res.json();
@@ -110,7 +200,7 @@ async function fetchRPSRanking() {
     listEl.innerHTML = ranking.map((r, i) => `<li>第${i + 1}位: <strong>${r.streak}連勝</strong> (${r.created_at})</li>`).join('');
 }
 
-// Guess
+// Guess (数字当て)
 async function fetchGuess() {
     const res = await (await fetch('/api/guess')).json();
     renderGuess(res);
@@ -176,7 +266,6 @@ document.querySelectorAll('.rps-btn').forEach(btn => {
 
 // 数字当て送信ボタン
 document.getElementById('guess-submit').addEventListener('click', playGuess);
-
 
 // 初期ロード時に最初のゲーム（まるばつ）の履歴を取得
 fetchTTT();
