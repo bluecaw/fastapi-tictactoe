@@ -173,7 +173,7 @@ def index():
             </div>
         </div>
 
-        <script src="/static/stcript.js"></script>
+        <script src="/static/script.js"></script>
     </body>
     </html>
     """
