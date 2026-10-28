@@ -98,11 +98,11 @@ def index():
     </head>
     <body>
 <div id="mySidebar" class="sidebar">
-            <a href="javascript:void(0)" class="close-btn" id="close-sidebar">&times;</a>
-            <a href="javascript:void(0)" class="nav-link" data-game="ttt">⭕❌ まるばつゲーム</a>
-            <a href="javascript:void(0)" class="nav-link" data-game="dnb">🔳 線引き陣取り</a>
-            <a href="javascript:void(0)" class="nav-link" data-game="rps">✌️ じゃんけん連勝バトル</a>
-            <a href="javascript:void(0)" class="nav-link" data-game="guess">🔢 数字当てゲーム</a>
+            <a href="#" class="close-btn" id="close-sidebar">&times;</a>
+            <a href="#" class="nav-link" data-game="ttt">⭕❌ まるばつゲーム</a>
+            <a href="#" class="nav-link" data-game="dnb">🔳 線引き陣取り</a>
+            <a href="#" class="nav-link" data-game="rps">✌️ じゃんけん連勝バトル</a>
+            <a href="#" class="nav-link" data-game="guess">🔢 数字当てゲーム</a>
         </div>
 
         <header>
