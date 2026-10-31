@@ -20,6 +20,14 @@ function switchGame(key) {
         document.getElementById('game-guess').classList.add('active');
         document.getElementById('title').innerText = '数字当てゲーム';
         fetchGuess();
+    } else if (key === 'guess') {
+        document.getElementById('game-guess').classList.add('active');
+        document.getElementById('title').innerText = '数字当てゲーム';
+        fetchGuess();
+    } else if (key === 'slide') {  // 👈 追加
+        document.getElementById('game-slide').classList.add('active');
+        document.getElementById('title').innerText = 'スライドパズル';
+        fetchSlide();
     }
 }
 
@@ -259,6 +267,77 @@ async function fetchRanking() {
     listEl.innerHTML = html;
 }
 
+// Slide (スライドパズル)
+async function fetchSlide() {
+    const res = await (await fetch('/api/slide')).json();
+    renderSlide(res);
+    fetchSlideRanking();
+}
+
+async function startSlide() {
+    const res = await (await fetch('/api/slide/start', { method: 'POST' })).json();
+    renderSlide(res);
+}
+
+async function moveSlide(idx) {
+    const res = await (await fetch('/api/slide/move', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ index: idx }) 
+    })).json();
+    renderSlide(res);
+    if (res.clear) {
+        fetchSlideRanking();
+    }
+}
+
+function renderSlide(data) {
+    const boardEl = document.getElementById('slide-board');
+    if (!boardEl) return;
+    boardEl.innerHTML = '';
+    
+    data.board.forEach((val, idx) => {
+        const tile = document.createElement('div');
+        tile.className = val === 0 ? 'ttt-cell empty' : 'ttt-cell';
+        tile.textContent = val === 0 ? '' : val;
+        tile.style.background = val === 0 ? 'transparent' : '#ffffff';
+        tile.style.cursor = val === 0 ? 'default' : 'pointer';
+        
+        if (val !== 0) {
+            tile.addEventListener('click', () => moveSlide(idx));
+        }
+        boardEl.appendChild(tile);
+    });
+
+    const statusEl = document.getElementById('slide-status');
+    if (statusEl) {
+        statusEl.innerHTML = data.clear 
+            ? `🎉 クリアおめでとう！ 手数: ${data.moves}回` 
+            : (data.is_playing ? `ゲーム中... 手数: ${data.moves}回` : '「スタート」を押してゲーム開始！');
+    }
+}
+
+async function fetchSlideRanking() {
+    const res = await fetch('/api/slide/ranking');
+    const ranking = await res.json();
+    const listEl = document.getElementById('slide-ranking-list');
+    if (!listEl) return;
+    
+    if (ranking.length === 0) {
+        listEl.innerHTML = '<li>まだクリアランキングがありません</li>';
+        return;
+    }
+    let html = '';
+    ranking.forEach((r, i) => {
+        let rankText = `${i + 1}位`;
+        if (i === 0) rankText = '🥇 1位';
+        if (i === 1) rankText = '🥈 2位';
+        if (i === 2) rankText = '🥉 3位';
+        html += `<li>${rankText}: <strong>${r.moves}回</strong> (${r.created_at})</li>`;
+    });
+    listEl.innerHTML = html;
+}
+
 // --- イベントリスナーの登録（CSP対応） ---
 
 // ハンバーガーメニューの開閉
@@ -278,6 +357,7 @@ document.getElementById('reset-ttt').addEventListener('click', resetTTT);
 document.getElementById('reset-dnb').addEventListener('click', resetDnB);
 document.getElementById('reset-rps').addEventListener('click', resetRPS);
 document.getElementById('reset-guess').addEventListener('click', resetGuess);
+document.getElementById('start-slide').addEventListener('click', startSlide);
 
 // じゃんけんボタン
 document.querySelectorAll('.rps-btn').forEach(btn => {
@@ -292,3 +372,9 @@ document.getElementById('guess-submit').addEventListener('click', playGuess);
 
 // 初期ロード時に最初のゲーム（まるばつ）の履歴を取得
 fetchTTT();
+
+// スライドパズル スタート/リセットボタン
+const resetSlideBtn = document.getElementById('reset-slide');
+if (resetSlideBtn) {
+    resetSlideBtn.addEventListener('click', startSlide);
+}

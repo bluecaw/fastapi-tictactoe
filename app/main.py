@@ -220,6 +220,20 @@ def index():
                     </div>
                 </div>
             </div>
+
+            <!-- game-guess の下あたりに追加 -->
+            <div id="game-slide" class="game-container">
+                <div id="slide-status" class="status">「スタート」を押してね</div>
+                <!-- スライドパズルのボード用要素 -->
+                <div id="slide-board" style="display: grid; grid-template-columns: repeat(5, 60px); gap: 6px; justify-content: center; margin: 20px auto;"></div>
+                <button class="reset-btn" id="reset-slide">スタート / リセット</button>
+                <div style="margin-top:20px;">
+                    <div class="ranking-box">
+                        <strong>🏆 スライドパズル ランキング (上位5件)</strong>
+                        <ul id="slide-ranking-list" style="margin: 5px 0 0 20px; padding:0;">読み込み中...</ul>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="/static/script.js"></script>
