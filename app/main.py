@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from app.database import init_db
-from app.routers import dnb, guess, rps, ttt
+from app.routers import dnb, guess, rps, ttt, slide
 from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
@@ -41,6 +41,7 @@ app.include_router(ttt.router)
 app.include_router(dnb.router)
 app.include_router(rps.router)
 app.include_router(guess.router)
+app.include_router(slide.router)
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
