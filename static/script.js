@@ -260,10 +260,9 @@ function renderSlide(data) {
     
     data.board.forEach((val, idx) => {
         const tile = document.createElement('div');
-        tile.className = val === 0 ? 'ttt-cell empty' : 'ttt-cell';
+        // 🛠️ クラス名を専用の 'slide-tile' に修正
+        tile.className = val === 0 ? 'slide-tile empty' : 'slide-tile';
         tile.textContent = val === 0 ? '' : val;
-        tile.style.background = val === 0 ? 'transparent' : '#ffffff';
-        tile.style.cursor = val === 0 ? 'default' : 'pointer';
         
         if (val !== 0) {
             tile.addEventListener('click', () => moveSlide(idx));
