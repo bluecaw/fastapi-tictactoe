@@ -155,6 +155,7 @@ def index():
             <a href="#" class="nav-link" data-game="dnb">🔳 線引き陣取り</a>
             <a href="#" class="nav-link" data-game="rps">✌️ じゃんけん連勝バトル</a>
             <a href="#" class="nav-link" data-game="guess">🔢 数字当てゲーム</a>
+            <a href="#" class="nav-link" data-game="slide">🧩 スライドパズル</a>
         </div>
 
         <header>
