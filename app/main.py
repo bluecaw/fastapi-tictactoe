@@ -183,6 +183,51 @@ def index():
                 transform: none;
                 background: transparent;
             }
+            /* --- 🧩 スライドパズル (5×5) 用スタイル --- */
+            #slide-board {
+                display: grid;
+                grid-template-columns: repeat(5, 60px); /* 5列にきっちり分ける */
+                gap: 6px;
+                justify-content: center;
+                margin: 20px auto;
+                background: #e2e8f0;
+                padding: 10px;
+                border-radius: 12px;
+                width: max-content;
+            }
+
+            .slide-tile {
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #0284c7, #0369a1);
+                color: white;
+                font-size: 1.25rem;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                cursor: pointer;
+                user-select: none;
+                box-shadow: 0 3px 6px rgba(0, 132, 199, 0.2);
+                transition: transform 0.1s ease, background 0.2s ease;
+            }
+
+            .slide-tile:hover {
+                background: linear-gradient(135deg, #0ea5e9, #0284c7);
+                transform: translateY(-2px);
+            }
+
+            .slide-tile.empty {
+                background: transparent;
+                cursor: default;
+                box-shadow: none;
+                border: 2px dashed #cbd5e1;
+            }
+            .slide-tile.empty:hover {
+                transform: none;
+                background: transparent;
+            }
         </style>
     </head>
     <body>
