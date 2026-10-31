@@ -128,6 +128,61 @@ def index():
             .bg-waves {
                 animation: wave-move 6s ease-in-out infinite;
             }
+            /* --- 🧩 スライドパズル (5×5) 用スタイル --- */
+            .slide-board {
+                display: grid;
+                grid-template-columns: repeat(5, 60px); /* 5列のグリッド配置 */
+                gap: 6px;
+                justify-content: center;
+                margin: 20px auto;
+                background: #e2e8f0;
+                padding: 10px;
+                border-radius: 12px;
+                box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+                width: max-content;
+            }
+
+            .slide-tile {
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #0284c7, #0369a1); /* 美しいブルーのグラデーション */
+                color: white;
+                font-size: 1.25rem;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                cursor: pointer;
+                user-select: none;
+                box-shadow: 0 3px 6px rgba(0, 132, 199, 0.2);
+                transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            /* タイルをホバーしたときの浮き上がり演出 */
+            .slide-tile:hover {
+                background: linear-gradient(135deg, #0ea5e9, #0284c7);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 10px rgba(0, 132, 199, 0.3);
+            }
+
+            /* クリックした瞬間に少し沈む演出 */
+            .slide-tile:active {
+                transform: translateY(1px);
+                box-shadow: 0 1px 3px rgba(0, 132, 199, 0.2);
+            }
+
+            /* 空欄 (0番目のタイル) のスタイル */
+            .slide-tile.empty {
+                background: transparent;
+                cursor: default;
+                box-shadow: none;
+                border: 2px dashed #cbd5e1; /* 空きマスであることが分かりやすいよう薄い枠線 */
+            }
+            .slide-tile.empty:hover {
+                transform: none;
+                background: transparent;
+            }
         </style>
     </head>
     <body>
