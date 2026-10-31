@@ -20,11 +20,7 @@ function switchGame(key) {
         document.getElementById('game-guess').classList.add('active');
         document.getElementById('title').innerText = '数字当てゲーム';
         fetchGuess();
-    } else if (key === 'guess') {
-        document.getElementById('game-guess').classList.add('active');
-        document.getElementById('title').innerText = '数字当てゲーム';
-        fetchGuess();
-    } else if (key === 'slide') {  // 👈 追加
+    } else if (key === 'slide') {
         document.getElementById('game-slide').classList.add('active');
         document.getElementById('title').innerText = 'スライドパズル';
         fetchSlide();
@@ -50,7 +46,6 @@ function renderTTT(data) {
         const c = document.createElement('div'); 
         c.className = 'ttt-cell'; 
         c.innerText = val;
-        // 🔒 CSP対応: onclick属性ではなく addEventListener を使用
         c.addEventListener('click', () => moveTTT(idx));
         b.appendChild(c);
     });
@@ -65,7 +60,7 @@ async function fetchTTTHistory() {
     listEl.innerHTML = history.map(h => `<li>勝者: <strong>${h.winner === 'Draw' ? '引き分け' : h.winner + 'の勝ち'}</strong> (${h.created_at})</li>`).join('');
 }
 
-// DnB (線引き陣取り) - 完全DOM生成によるCSP対応
+// DnB (線引き陣取り)
 async function fetchDnB() {
     renderDnB(await (await fetch('/api/dnb')).json());
     fetchDnBHistory();
@@ -81,30 +76,23 @@ function renderDnB(data) {
     const boardEl = document.getElementById('dnb-board');
     boardEl.innerHTML = '';
 
-    // 補助関数: 横線要素の作成
     function createHLine(idx) {
         const line = document.createElement('div');
         line.className = 'h-line';
-        
-        // データの値（例: null, 'P1', 'P2', または true/false など）に応じた処理
         const owner = data.h_lines[idx]; 
         if (owner) {
             line.classList.add('active');
-            // 'P1' なら p1クラス、'P2' なら p2クラスを付与
             if (owner === 'P1' || owner === 1) line.classList.add('p1');
             else if (owner === 'P2' || owner === 2) line.classList.add('p2');
-            else line.classList.add('p1'); // 単なる真偽値の場合はデフォルトでp1扱い
+            else line.classList.add('p1');
         }
-
         line.addEventListener('click', () => moveDnB('h', idx));
         return line;
     }
 
-    // 補助関数: 縦線要素の作成
     function createVLine(idx) {
         const line = document.createElement('div');
         line.className = 'v-line';
-        
         const owner = data.v_lines[idx];
         if (owner) {
             line.classList.add('active');
@@ -112,24 +100,20 @@ function renderDnB(data) {
             else if (owner === 'P2' || owner === 2) line.classList.add('p2');
             else line.classList.add('p1');
         }
-
         line.addEventListener('click', () => moveDnB('v', idx));
         return line;
     }
 
-    // 補助関数: ドット要素の作成
     function createDot() {
         const dot = document.createElement('div');
         dot.className = 'dot';
         return dot;
     }
 
-    // 補助関数: ボックス要素の作成
     function createBox(idx) {
         const box = document.createElement('div');
         box.className = 'box';
-        
-        const boxOwner = data.boxes[idx]; // 例: 'P1', 'P2', または空文字
+        const boxOwner = data.boxes[idx]; 
         if (boxOwner) {
             box.innerText = boxOwner;
             if (boxOwner === 'P1') box.classList.add('p1');
@@ -137,54 +121,32 @@ function renderDnB(data) {
         } else {
             box.innerText = '';
         }
-
         return box;
     }
 
-    // --- 以下、行の組み立て（変更なし） ---
     const row1 = document.createElement('div');
     row1.className = 'dnb-row';
-    row1.appendChild(createDot());
-    row1.appendChild(createHLine(0));
-    row1.appendChild(createDot());
-    row1.appendChild(createHLine(1));
-    row1.appendChild(createDot());
+    row1.appendChild(createDot()); row1.appendChild(createHLine(0)); row1.appendChild(createDot()); row1.appendChild(createHLine(1)); row1.appendChild(createDot());
     boardEl.appendChild(row1);
 
     const row2 = document.createElement('div');
     row2.className = 'dnb-row';
-    row2.appendChild(createVLine(0));
-    row2.appendChild(createBox(0));
-    row2.appendChild(createVLine(1));
-    row2.appendChild(createBox(1));
-    row2.appendChild(createVLine(2));
+    row2.appendChild(createVLine(0)); row2.appendChild(createBox(0)); row2.appendChild(createVLine(1)); row2.appendChild(createBox(1)); row2.appendChild(createVLine(2));
     boardEl.appendChild(row2);
 
     const row3 = document.createElement('div');
     row3.className = 'dnb-row';
-    row3.appendChild(createDot());
-    row3.appendChild(createHLine(2));
-    row3.appendChild(createDot());
-    row3.appendChild(createHLine(3));
-    row3.appendChild(createDot());
+    row3.appendChild(createDot()); row3.appendChild(createHLine(2)); row3.appendChild(createDot()); row3.appendChild(createHLine(3)); row3.appendChild(createDot());
     boardEl.appendChild(row3);
 
     const row4 = document.createElement('div');
     row4.className = 'dnb-row';
-    row4.appendChild(createVLine(3));
-    row4.appendChild(createBox(2));
-    row4.appendChild(createVLine(4));
-    row4.appendChild(createBox(3));
-    row4.appendChild(createVLine(5));
+    row4.appendChild(createVLine(3)); row4.appendChild(createBox(2)); row4.appendChild(createVLine(4)); row4.appendChild(createBox(3)); row4.appendChild(createVLine(5));
     boardEl.appendChild(row4);
 
     const row5 = document.createElement('div');
     row5.className = 'dnb-row';
-    row5.appendChild(createDot());
-    row5.appendChild(createHLine(4));
-    row5.appendChild(createDot());
-    row5.appendChild(createHLine(5));
-    row5.appendChild(createDot());
+    row5.appendChild(createDot()); row5.appendChild(createHLine(4)); row5.appendChild(createDot()); row5.appendChild(createHLine(5)); row5.appendChild(createDot());
     boardEl.appendChild(row5);
 
     document.getElementById('dnb-status').innerText = data.winner ? (data.winner === 'Draw' ? '引き分け！' : `勝者: ${data.winner} 🎉`) : `手番: ${data.turn} | P1: ${data.scores.P1}点 / P2: ${data.scores.P2}点`;
@@ -340,11 +302,9 @@ async function fetchSlideRanking() {
 
 // --- イベントリスナーの登録（CSP対応） ---
 
-// ハンバーガーメニューの開閉
 document.getElementById('open-sidebar').addEventListener('click', openNav);
 document.getElementById('close-sidebar').addEventListener('click', closeNav);
 
-// サイドバーのゲーム切り替えリンク
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
         const gameKey = e.target.getAttribute('data-game');
@@ -352,14 +312,17 @@ document.querySelectorAll('.nav-link').forEach(link => {
     });
 });
 
-// 各種リセットボタン
 document.getElementById('reset-ttt').addEventListener('click', resetTTT);
 document.getElementById('reset-dnb').addEventListener('click', resetDnB);
 document.getElementById('reset-rps').addEventListener('click', resetRPS);
 document.getElementById('reset-guess').addEventListener('click', resetGuess);
-document.getElementById('start-slide').addEventListener('click', startSlide);
 
-// じゃんけんボタン
+// スライドパズルのスタート/リセットボタン
+const resetSlideBtn = document.getElementById('reset-slide');
+if (resetSlideBtn) {
+    resetSlideBtn.addEventListener('click', startSlide);
+}
+
 document.querySelectorAll('.rps-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const hand = e.target.getAttribute('data-hand');
@@ -367,14 +330,7 @@ document.querySelectorAll('.rps-btn').forEach(btn => {
     });
 });
 
-// 数字当て送信ボタン
 document.getElementById('guess-submit').addEventListener('click', playGuess);
 
-// 初期ロード時に最初のゲーム（まるばつ）の履歴を取得
+// 初期ロード
 fetchTTT();
-
-// スライドパズル スタート/リセットボタン
-const resetSlideBtn = document.getElementById('reset-slide');
-if (resetSlideBtn) {
-    resetSlideBtn.addEventListener('click', startSlide);
-}
